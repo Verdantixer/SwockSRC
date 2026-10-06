@@ -1,0 +1,18 @@
+[Unit]
+Description=Swock account management panel
+After=network.target
+
+[Service]
+Type=simple
+User=swock
+Group=swock
+WorkingDirectory=/opt/swock-devmanagement
+EnvironmentFile=/etc/swock-devmanagement.env
+ExecStart=/usr/bin/node /opt/swock-devmanagement/server.js
+Restart=on-failure
+RestartSec=3
+PrivateTmp=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
