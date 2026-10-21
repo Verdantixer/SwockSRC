@@ -18,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _portController = TextEditingController(text: '443');
   final _serverPublicKeyController = TextEditingController();
   final _clientPrivateKeyController = TextEditingController();
+  final _tunnelAddressController = TextEditingController();
   final _nativeVpn = NativeVpnService();
   final _profileService = ProfileService();
   String _state = 'disconnected';
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _portController.dispose();
     _serverPublicKeyController.dispose();
     _clientPrivateKeyController.dispose();
+    _tunnelAddressController.dispose();
     super.dispose();
   }
 
@@ -49,21 +51,23 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       final port = int.tryParse(_portController.text.trim());
       final server = _serverController.text.trim();
-      final serverPublicKey = _serverPublicKeyController.text
-          .trim()
-          .toLowerCase();
-      final clientPrivateKey = _clientPrivateKeyController.text
-          .trim()
-          .toLowerCase();
+      final serverPublicKey =
+          _serverPublicKeyController.text.trim().toLowerCase();
+      final clientPrivateKey =
+          _clientPrivateKeyController.text.trim().toLowerCase();
+      final tunnelAddress = _tunnelAddressController.text.trim();
       final keyPattern = RegExp(r'^[0-9a-f]{64}$');
       if (server.isEmpty ||
           port == null ||
           port < 1 ||
           port > 65535 ||
           !keyPattern.hasMatch(serverPublicKey) ||
-          !keyPattern.hasMatch(clientPrivateKey)) {
+          !keyPattern.hasMatch(clientPrivateKey) ||
+          !RegExp(
+            r'^10\.8\.0\.(?:[2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-4])$',
+          ).hasMatch(tunnelAddress)) {
         throw const FormatException(
-          'Enter the server, port, and both 64-character X25519 keys.',
+          'Enter the server, port, both 64-character X25519 keys, and assigned tunnel address.',
         );
       }
       final now = DateTime.now();
@@ -74,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
         port: port,
         serverPublicKey: serverPublicKey,
         clientPrivateKey: clientPrivateKey,
+        tunnelAddress: tunnelAddress,
         transport: TransportMode.tcp,
         createdAt: now,
         lastUsedAt: now,
@@ -90,35 +95,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _importProfile() async {
     final controller = TextEditingController();
     final uri = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Import Swock profile'),
-        content: TextField(
-          controller: controller,
-          minLines: 3,
-          maxLines: 5,
-          autocorrect: false,
-          enableSuggestions: false,
-          decoration: const InputDecoration(hintText: 'swock://…'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Import Swock profile'),
+            content: TextField(
+              controller: controller,
+              minLines: 3,
+              maxLines: 5,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: const InputDecoration(hintText: 'swock://…'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: const Text('Import'),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Import'),
-          ),
-        ],
-      ),
     );
     controller.dispose();
     if (uri == null || uri.trim().isEmpty) return;
@@ -138,6 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _portController.text = profile.port.toString();
       _serverPublicKeyController.text = profile.serverPublicKey;
       _clientPrivateKeyController.text = profile.clientPrivateKey;
+      _tunnelAddressController.text = profile.tunnelAddress;
       if (mounted) {
         _showMessage('Profile imported. Tap Connect to start the VPN.');
       }
@@ -263,6 +271,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               'Keep this key private.',
               style: TextStyle(color: Color(0xFFA7B0AA), fontSize: 12),
+            ),
+          ),
+          const SizedBox(height: 18),
+          TextField(
+            controller: _tunnelAddressController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Assigned tunnel IP (10.8.0.2-10.8.0.254)',
             ),
           ),
           const SizedBox(height: 18),

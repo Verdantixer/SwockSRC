@@ -15,9 +15,13 @@ object AppIntegrity {
     @Suppress("DEPRECATION")
     fun isTrusted(context: Context): Boolean {
         if (context.packageName != expectedPackageName ||
-            BuildConfig.APPLICATION_ID != expectedPackageName ||
-            BuildConfig.DEBUG ||
-            context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+            BuildConfig.APPLICATION_ID != expectedPackageName
+        ) {
+            return false
+        }
+
+        if (BuildConfig.DEBUG ||
+            (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         ) {
             return false
         }

@@ -69,9 +69,11 @@ class _NativeAdStripState extends State<NativeAdStrip> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+    valueListenable: AdService.instance.adFreeAccess,
+    builder: (context, adFree, _) {
     final ad = _ad;
-    if (ad == null || !_loaded) return const SizedBox.shrink();
+    if (adFree || ad == null || !_loaded) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -95,5 +97,6 @@ class _NativeAdStripState extends State<NativeAdStrip> {
         ],
       ),
     );
-  }
+    },
+  );
 }

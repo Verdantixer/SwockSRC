@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="swock_background">#080B09</color>
+    <color name="swock_navigation">#101512</color>
 </resources>

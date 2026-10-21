@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-enum VpnProtocol { shadowsocks }
+enum VpnProtocol { shadowsocks, swock, vless, vmess, trojan }
 
 enum TransportMode { auto, tcp, websocket, websocketTls }
 
@@ -204,6 +204,11 @@ class VpnProfile {
   final int port;
   final String serverPublicKey;
   final String clientPrivateKey;
+  final String tunnelAddress;
+  final String uuid;
+  final int alterId;
+  final String flow;
+  final String security;
   final VpnProtocol protocol;
   final String cipher;
   final String password;
@@ -227,8 +232,13 @@ class VpnProfile {
     required this.port,
     this.serverPublicKey = '',
     this.clientPrivateKey = '',
-    this.protocol = VpnProtocol.shadowsocks,
-    this.cipher = 'aes-256-gcm',
+    this.tunnelAddress = '',
+    this.uuid = '',
+    this.alterId = 0,
+    this.flow = '',
+    this.security = 'auto',
+    this.protocol = VpnProtocol.swock,
+    this.cipher = 'chacha20-poly1305',
     this.password = '',
     this.transport = TransportMode.auto,
     this.webSocket = const WebSocketConfig(),
@@ -254,6 +264,11 @@ class VpnProfile {
     int? port,
     String? serverPublicKey,
     String? clientPrivateKey,
+    String? tunnelAddress,
+    String? uuid,
+    int? alterId,
+    String? flow,
+    String? security,
     VpnProtocol? protocol,
     String? cipher,
     String? password,
@@ -277,6 +292,11 @@ class VpnProfile {
       port: port ?? this.port,
       serverPublicKey: serverPublicKey ?? this.serverPublicKey,
       clientPrivateKey: clientPrivateKey ?? this.clientPrivateKey,
+      tunnelAddress: tunnelAddress ?? this.tunnelAddress,
+      uuid: uuid ?? this.uuid,
+      alterId: alterId ?? this.alterId,
+      flow: flow ?? this.flow,
+      security: security ?? this.security,
       protocol: protocol ?? this.protocol,
       cipher: cipher ?? this.cipher,
       password: password ?? this.password,
@@ -302,35 +322,45 @@ class VpnProfile {
           base64Url.encode(utf8.encode(DateTime.now().toIso8601String())),
       name: json['name'] as String? ?? 'Unnamed profile',
       server: json['server'] as String? ?? '',
-      port: (json['port'] as num?)?.toInt() ?? 1080,
+      port: (json['port'] as num?)?.toInt() ?? 443,
       serverPublicKey: json['serverPublicKey'] as String? ?? '',
       clientPrivateKey: json['clientPrivateKey'] as String? ?? '',
+      tunnelAddress: json['tunnelAddress'] as String? ?? '',
+      uuid: json['uuid'] as String? ?? '',
+      alterId: (json['alterId'] as num?)?.toInt() ?? 0,
+      flow: json['flow'] as String? ?? '',
+      security: json['security'] as String? ?? 'auto',
       protocol: VpnProtocol.values.firstWhere(
         (element) =>
-            element.name == (json['protocol'] as String? ?? 'shadowsocks'),
-        orElse: () => VpnProtocol.shadowsocks,
+            element.name == (json['protocol'] as String? ?? 'swock'),
+        orElse: () => VpnProtocol.swock,
       ),
-      cipher: json['cipher'] as String? ?? 'aes-256-gcm',
+      cipher: json['cipher'] as String? ?? 'chacha20-poly1305',
       password: json['password'] as String? ?? '',
       transport: TransportMode.values.firstWhere(
         (element) => element.name == (json['transport'] as String? ?? 'auto'),
         orElse: () => TransportMode.auto,
       ),
-      webSocket: json['webSocket'] is Map
-          ? WebSocketConfig.fromJson(json['webSocket'])
-          : const WebSocketConfig(),
-      tls: json['tls'] is Map
-          ? TlsConfig.fromJson(json['tls'])
-          : const TlsConfig(),
-      proxy: json['proxy'] is Map
-          ? ProxyConfig.fromJson(json['proxy'])
-          : const ProxyConfig(),
-      dns: json['dns'] is Map
-          ? DnsConfig.fromJson(json['dns'])
-          : const DnsConfig(),
-      encryption: json['encryption'] is Map
-          ? EncryptionConfig.fromJson(json['encryption'])
-          : const EncryptionConfig(),
+      webSocket:
+          json['webSocket'] is Map
+              ? WebSocketConfig.fromJson(json['webSocket'])
+              : const WebSocketConfig(),
+      tls:
+          json['tls'] is Map
+              ? TlsConfig.fromJson(json['tls'])
+              : const TlsConfig(),
+      proxy:
+          json['proxy'] is Map
+              ? ProxyConfig.fromJson(json['proxy'])
+              : const ProxyConfig(),
+      dns:
+          json['dns'] is Map
+              ? DnsConfig.fromJson(json['dns'])
+              : const DnsConfig(),
+      encryption:
+          json['encryption'] is Map
+              ? EncryptionConfig.fromJson(json['encryption'])
+              : const EncryptionConfig(),
       metadata: json['metadata'] as String? ?? '',
       createdAt:
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??
@@ -351,6 +381,11 @@ class VpnProfile {
     'port': port,
     'serverPublicKey': serverPublicKey,
     'clientPrivateKey': clientPrivateKey,
+    'tunnelAddress': tunnelAddress,
+    'uuid': uuid,
+    'alterId': alterId,
+    'flow': flow,
+    'security': security,
     'protocol': protocol.name,
     'cipher': cipher,
     'password': password,

@@ -28,8 +28,10 @@ flutter run
 
 ```bash
 flutter build apk --debug
-# or
-flutter build apk --release
+# One universal release APK for all configured Android ABIs
+scripts/build-android.sh
+# Optional ABI-specific APKs
+scripts/build-android.sh split
 ```
 
 ## Notes

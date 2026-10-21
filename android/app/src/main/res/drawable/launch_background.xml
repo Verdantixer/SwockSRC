@@ -3,8 +3,6 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/swock_background" />
     <item
-        android:drawable="@drawable/swock_splash_mark"
-        android:gravity="center"
-        android:width="96dp"
-        android:height="96dp" />
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:gravity="center" />
 </layer-list>

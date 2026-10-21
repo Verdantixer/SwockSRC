@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../models/vpn_profile.dart';
+import 'advanced_settings_service.dart';
 
 class NativeVpnService {
   NativeVpnService({MethodChannel? channel})
@@ -11,8 +12,12 @@ class NativeVpnService {
   final MethodChannel _channel;
 
   Future<bool> connect(VpnProfile profile) async {
+    final advanced = await AdvancedSettingsService().load();
     return await _channel.invokeMethod<bool>('connect', <String, dynamic>{
-          'profile': jsonEncode(profile.toJson()),
+          'profile': jsonEncode({
+            ...profile.toJson(),
+            'advanced': advanced.toJson(),
+          }),
         }) ??
         false;
   }
