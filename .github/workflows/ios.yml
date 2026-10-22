@@ -1,4 +1,4 @@
-name: Build iOS IPA
+name: Build iOS App
 
 on:
   push:
@@ -30,11 +30,19 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS App Archive
-        run: flutter build ipa --no-codesign --release
+      - name: Build iOS Release App
+        run: flutter build ios --release --no-codesign
 
-      - name: Upload iOS Archive Artifact
+      - name: Package Payload to IPA
+        run: |
+          mkdir -p build/ios/ipa/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cd build/ios/ipa
+          zip -r Swock.ipa Payload
+          cd ../../..
+
+      - name: Upload iOS IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Swock-iOS-Archive
-          path: build/ios/archive/Runner.xcarchive
+          name: Swock-iOS-IPA
+          path: build/ios/ipa/Swock.ipa
