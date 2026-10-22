@@ -69,7 +69,10 @@ class AdService {
   Future<void> initialize() => _initialization ??= _initialize();
 
   Future<void> _initialize() async {
-    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
+    if (kIsWeb || !Platform.isAndroid) {
+      _canRequestAds = false;
+      return;
+    }
     await _restoreRewardState();
     final completer = Completer<void>();
     try {
